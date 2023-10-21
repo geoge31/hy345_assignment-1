@@ -36,7 +36,7 @@ int hasRedirections(char* str);                                   /* checks if t
 
 void pipeline(char *pipesString, int totalPipes);
 
-
+void redirections(char* str);
 
 
 

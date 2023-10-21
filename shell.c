@@ -41,14 +41,11 @@ void print_command_prompt()
 void handle_input(char* str)
 {     
       char*       token;
-      int         pipes_check,redir_check;
+      int         pipes_check,redir_check,counter,i;
 
-
-      token = NULL;
+      pipes_check,redir_check,counter,i = 0;
 
       token = strtok(str,";");
-     
-      pipes_check,redir_check = 0;
 
       while(token)
       {
@@ -57,14 +54,15 @@ void handle_input(char* str)
 
             if(pipes_check > 0)
             {
-                  // pipes_implementation(token,pipes_check);
                   pipeline(token,pipes_check);
                   token = strtok(NULL,";"); 
             }
 
             else if(redir_check == 1)
             {
-                  printf("Has redirections\n");
+                  // printf("Has redirections\n");
+                  redirections(token);
+                  token = strtok(NULL,";");
             }
 
             else
@@ -88,8 +86,8 @@ void handle_input(char* str)
 
 void fork_process(char* cmd)
 {
-      pid_t pid;
-      char** cmd_arguments;
+      pid_t       pid;
+      char**      cmd_arguments;
 
       cmd_arguments = NULL;
 
@@ -320,5 +318,100 @@ void pipeline(char *pipesString, int totalPipes)
       //       close(pipesArr[i][0]);
       //       close(pipesArr[i][1]);
       // }
+
+}
+
+
+
+void redirections(char* str)
+{
+      pid_t       pid;
+      char*       input_file;
+      char*       output_file;
+      char*       token;
+      int         status; 
+
+      
+
+      pid = fork();
+     
+      if(pid < 0)
+      {
+            perror("fork");
+            exit(EXIT_FAILURE);
+      }
+
+      else if(pid == 0)
+      {                                   /*    Child Process     */
+            input_file = NULL;
+            output_file = NULL;
+
+            token = strtok(str," ");
+
+            while(token)
+            {
+                  if(strcmp(token,"<") == 0)
+                  {
+                       input_file = strtok(NULL," "); 
+                  }
+                  else if(strcmp(token,">") == 0)
+                  {
+                       output_file = strtok(NULL," "); 
+                  }
+                  else 
+                  {
+                        execlp(token,token,NULL);
+                        perror("execlp");
+                        exit(EXIT_FAILURE);
+                  }
+
+                  token = strtok(NULL, " ");      
+            }
+
+
+            if(input_file)
+            {
+                  int fd_in = open(input_file, O_RDONLY);
+
+                  if (fd_in == -1) 
+                  {
+                        perror("open");
+                        exit(EXIT_FAILURE);
+                  }
+                  
+                  dup2(fd_in, STDIN_FILENO);
+                  close(fd_in);
+            }
+      
+            if(output_file)
+            {
+                  printf("Output file: %s\n", output_file); // Debugging statement
+                  
+                  int fd_out = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+                  
+                  if (fd_out == -1) 
+                  {
+                        perror("open");
+                        exit(EXIT_FAILURE);
+                  }
+                  
+                  dup2(fd_out, STDOUT_FILENO);
+                  close(fd_out);
+            }
+
+            execlp(token,token,NULL);
+            perror("execlp");
+            exit(EXIT_FAILURE);
+      }
+
+      else 
+      {
+            waitpid(pid,&status,0);
+
+            if (WIFEXITED(status) && WEXITSTATUS(status) != 0) 
+            {
+                  fprintf(stderr, "Command failed with status %d\n", WEXITSTATUS(status));
+            }
+      }
 
 }
