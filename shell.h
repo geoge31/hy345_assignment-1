@@ -28,7 +28,7 @@ void fork_process(char* cmd);                                     /* forks a pro
 
 char** set_arguments(char* cmd);                                  /* set the arguments of the command to be executed*/
 
-void execute_command(char* exec_args[MAX_ARGS]);                  /*executes command  */
+void execute_process(char* exec_args[MAX_ARGS]);                  /*executes command  */
 
 int hasPipes(char *str);                                          /*checks if there is any pipe in the command*/
 

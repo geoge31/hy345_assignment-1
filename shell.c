@@ -104,7 +104,7 @@ void fork_process(char* cmd)
          else if(pid == 0)
          {
             cmd_arguments = set_arguments(cmd);
-            execute_command(cmd_arguments);
+            execute_process(cmd_arguments);
             free(cmd_arguments);  
          }
 
@@ -150,7 +150,7 @@ char** set_arguments(char* cmd)
 
 
 
-void execute_command(char* exec_args[MAX_ARGS])
+void execute_process(char* exec_args[MAX_ARGS])
 {
       if(execvp(exec_args[0],exec_args) == -1)
       {
@@ -261,7 +261,7 @@ void pipeline(char *pipesString, int totalPipes)
       //                         // }
       //                   }
  
-      //                   execute_command(cmd_arguments);
+      //                   execute_process(cmd_arguments);
       //             }
 
       //             //  teleutaia diergasia
@@ -279,7 +279,7 @@ void pipeline(char *pipesString, int totalPipes)
       //                   }
 
       //                   // close(pipesArr[j-1][1]);
-      //                   execute_command(cmd_arguments);
+      //                   execute_process(cmd_arguments);
       //             } 
 
       //             // ypoloipes
@@ -301,7 +301,7 @@ void pipeline(char *pipesString, int totalPipes)
                         
       //                   // close pipes
 
-      //                   execute_command(cmd_arguments);
+      //                   execute_process(cmd_arguments);
       //             }    
       //       }
             
