@@ -13,6 +13,8 @@ int main(int argc, char *argv[]) {
 
     char*  str_input;
 
+    int original_stdout = dup(1);
+
     str_input = (char*) malloc(sizeof(char) * MAX_INPUT_SIZE);
 
     if(!str_input)
