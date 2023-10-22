@@ -15,6 +15,7 @@
 #include<errno.h>
 #include<sys/types.h>
 #include<sys/wait.h>
+#include <fcntl.h>
 
 #define MAX_INPUT_SIZE    1024
 #define MAX_ARGS    512
@@ -36,7 +37,9 @@ int hasRedirections(char* str);                                   /* checks if t
 
 void pipeline(char *pipesString, int totalPipes);
 
-void redirections(char* str);
+void redirections(char* str, int redir_flag);
+
+void execute_redirections(char** cmd1, char* cmd2, int redir);
 
 
 

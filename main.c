@@ -11,18 +11,27 @@
 
 int main(int argc, char *argv[]) {
 
-    char str_input[MAX_INPUT_SIZE];
-    char *token;
+    char*  str_input;
 
-    while(TRUE) 
+    str_input = (char*) malloc(sizeof(char) * MAX_INPUT_SIZE);
+
+    if(!str_input)
     {
-        print_command_prompt();
+        perror("MEMORY FAULT");
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        while(TRUE) 
+        {
+            print_command_prompt();
 
-        fgets(str_input, MAX_INPUT_SIZE, stdin);
+            fgets(str_input, MAX_INPUT_SIZE, stdin);
 
-        str_input[strlen(str_input) - 1] = '\0';
+            str_input[strlen(str_input) - 1] = '\0';
 
-        handle_input(str_input);
+            handle_input(str_input);
+        }
     }
 
     return 0;

@@ -41,16 +41,22 @@ void print_command_prompt()
 void handle_input(char* str)
 {     
       char*       token;
+      char**      argmts;
       int         pipes_check,redir_check,counter,i;
 
       pipes_check,redir_check,counter,i = 0;
 
       token = strtok(str,";");
-
+      
       while(token)
       {
+            printf("token\t%s\n",token);  //debug
+
             pipes_check = hasPipes(token);
+            printf("Pipes\t%d\n",pipes_check);  // debug
+
             redir_check = hasRedirections(token);
+            printf("Redirection\t%d\n",redir_check);  //debug
 
             if(pipes_check > 0)
             {
@@ -58,10 +64,9 @@ void handle_input(char* str)
                   token = strtok(NULL,";"); 
             }
 
-            else if(redir_check == 1)
+            else if(redir_check > 0)
             {
-                  // printf("Has redirections\n");
-                  redirections(token);
+                  redirections(token,redir_check);
                   token = strtok(NULL,";");
             }
 
@@ -116,9 +121,9 @@ void fork_process(char* cmd)
 
 char** set_arguments(char* cmd)
 {
-      char* token;
-      char** exec_args;
-      int i;
+      char*       token;
+      char**      exec_args;
+      int         i;
 
       exec_args = (char**) malloc (sizeof(char*) * MAX_ARGS);
 
@@ -182,21 +187,47 @@ int hasPipes(char *str)
 
 int hasRedirections(char* str)
 {
-      int redir_flag,i;
+      /*
+            int redir_flag,i;
 
-      redir_flag,i = 0;
+            redir_flag,i = 0;
 
-      while(i < strlen(str))
-      {
-            if(str[i] == '<' || str[i] == '>')
+            while(i < strlen(str))
             {
-                  redir_flag = 1;
-                  return redir_flag;
+                  if(str[i] == '<' || str[i] == '>' || str[i] == '>>')
+                  {
+                        redir_flag = 1;
+                        return redir_flag;
+                  }
+                  i++;
             }
-            i++;
-      }
 
-      return 0;
+            return 0;
+      */
+
+      char* in;
+      char* out;
+      char* app;
+
+      in = strstr(str,"<");
+      out = strstr(str,">");
+      app = strstr(str,">>");
+
+      if(in)
+      {
+            return 1;
+      }
+      else if(out)
+      {
+            return 2;
+      }
+      else if(app){
+            return 3;
+      }
+      else 
+      {
+            return 0;
+      }
 }
 
 
@@ -323,95 +354,100 @@ void pipeline(char *pipesString, int totalPipes)
 
 
 
-void redirections(char* str)
+void redirections(char* str, int redir_flag)
 {
-      pid_t       pid;
-      char*       input_file;
-      char*       output_file;
       char*       token;
-      int         status; 
+      char*       token2;
+      char**      argmnts;
 
-      
+      token = NULL;
+      token2 = NULL;
+      argmnts = NULL;
+
+      // printf("Redirection Received %s\n",str);
+
+      switch(redir_flag)
+      {
+            case 1:
+                        token = strtok(str,"<");
+                        argmnts = set_arguments(token);
+                        token = strtok(NULL,"<");
+                        break;
+            case 2:
+                        token = strtok(str,">");
+                        token2 = strtok(NULL,">");
+                        argmnts = set_arguments(token);
+                        break;
+            case 3:     
+                        token = strtok(str,">>");
+                        argmnts = set_arguments(token);
+                        token = strtok(NULL,">>");
+                        break;
+            default:
+                        break;
+      }
+
+      printf("First command\t%s\nSecond command\t%s\n",*argmnts,token2);      
+
+      execute_redirections(argmnts,token2,redir_flag);
+
+}
+
+
+
+void execute_redirections(char** cmd1, char* cmd2, int redir)
+{
+      pid_t pid;
+
+      if(redir != 0)
+      {
+            if(redir == 1)
+            {
+                  int fd = open(cmd2, O_RDONLY); 
+
+                  if(fd == -1)
+                  {
+                        perror("open");
+                        exit(EXIT_FAILURE);
+                  }  
+
+                  dup2(fd, STDIN_FILENO);
+                  close(fd);
+            }
+            
+            if(redir == 2)
+            {
+                  int fd = open(cmd2, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+
+                  if(fd == -1)
+                  {
+                        perror("open");
+                        exit(EXIT_FAILURE);  
+                  }
+                  dup2(fd,STDOUT_FILENO);
+                  close(fd);
+            }
+      }
 
       pid = fork();
-     
+
       if(pid < 0)
       {
-            perror("fork");
+            perror("FORK FAILURE");
             exit(EXIT_FAILURE);
       }
 
       else if(pid == 0)
-      {                                   /*    Child Process     */
-            input_file = NULL;
-            output_file = NULL;
-
-            token = strtok(str," ");
-
-            while(token)
-            {
-                  if(strcmp(token,"<") == 0)
-                  {
-                       input_file = strtok(NULL," "); 
-                  }
-                  else if(strcmp(token,">") == 0)
-                  {
-                       output_file = strtok(NULL," "); 
-                  }
-                  else 
-                  {
-                        execlp(token,token,NULL);
-                        perror("execlp");
-                        exit(EXIT_FAILURE);
-                  }
-
-                  token = strtok(NULL, " ");      
-            }
-
-
-            if(input_file)
-            {
-                  int fd_in = open(input_file, O_RDONLY);
-
-                  if (fd_in == -1) 
-                  {
-                        perror("open");
-                        exit(EXIT_FAILURE);
-                  }
-                  
-                  dup2(fd_in, STDIN_FILENO);
-                  close(fd_in);
-            }
-      
-            if(output_file)
-            {
-                  printf("Output file: %s\n", output_file); // Debugging statement
-                  
-                  int fd_out = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-                  
-                  if (fd_out == -1) 
-                  {
-                        perror("open");
-                        exit(EXIT_FAILURE);
-                  }
-                  
-                  dup2(fd_out, STDOUT_FILENO);
-                  close(fd_out);
-            }
-
-            execlp(token,token,NULL);
-            perror("execlp");
-            exit(EXIT_FAILURE);
-      }
-
-      else 
       {
-            waitpid(pid,&status,0);
-
-            if (WIFEXITED(status) && WEXITSTATUS(status) != 0) 
+            if(execvp(cmd1[0],cmd1) == -1 )
             {
-                  fprintf(stderr, "Command failed with status %d\n", WEXITSTATUS(status));
+                  perror("EXECUTION FAILURE");
+                  exit(EXIT_FAILURE);
             }
       }
 
+      else
+      {
+            wait(NULL);
+      }
 }
