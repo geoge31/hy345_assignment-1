@@ -50,13 +50,13 @@ void handle_input(char* str)
       
       while(token)
       {
-            printf("token\t%s\n",token);  //debug
+            // printf("token\t%s\n",token);  //debug
 
             pipes_check = hasPipes(token);
-            printf("Pipes\t%d\n",pipes_check);  // debug
+            // printf("Pipes\t%d\n",pipes_check);  // debug
 
             redir_check = hasRedirections(token);
-            printf("Redirection\t%d\n",redir_check);  //debug
+            // printf("Redirection\t%d\n",redir_check);  //debug
 
             if(pipes_check > 0)
             {
