@@ -36,16 +36,14 @@ int hasPipes(char *str);                                          /*checks if th
 
 int hasRedirections(char* str);                                   /* checks if there is any redirection in the command */
 
-void pipeline(char *pipesString, int totalPipes);
+void pipeline(char *pipesString, int totalPipes);                 /* sets commands with pipes */
 
-void redirections(char* str, int redir_flag);
+void redirections(char* str, int redir_flag);                     /* sets redirections */
 
-void execute_redirections(char** cmd1, char* cmd2, int redir);
+void execute_redirections(char** cmd1, char* cmd2, int redir);    /* executes commands with redirections */
 
-char* removeSpaces(char* input);
+char* removeSpaces(char* input);                                  /* removes a space from  a string */
 
-
-// void pipes_implementation(char *str, int npipes, char* exec_args[MAX_ARGS]);
 
 
 

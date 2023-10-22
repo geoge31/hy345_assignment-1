@@ -14,26 +14,13 @@ void print_command_prompt()
 {
       char cwd[1024]; 
       char *dirPath;
-      char *userName;
 
       dirPath = NULL;
-      userName = NULL;
+      dirPath = (char*) malloc (sizeof(char));
 
-    //   dirPath = (char*) malloc (sizeof(char));
-    //   userName = (char* )malloc (sizeof(char));
-    //   userName = getlogin();
-
-    //   if(userName==NULL)
-    //   {
-    //         perror("NO USER FOUND");
-    //         exit(EXIT_FAILURE);
-    //   } 
-    //   else 
-    //   {
-            dirPath = getcwd(cwd,sizeof(cwd));
-            printf("csd3927-hy345sh@%s:%s$ ",userName,dirPath);
-    //   } 
-     
+      dirPath = getcwd(cwd,sizeof(cwd));
+      printf("csd3927-hy345sh@%s:%s$ ",getlogin(),dirPath);
+         
 }
 
 
@@ -62,8 +49,7 @@ void handle_input(char* str)
             else if(redir_check > 0)
             {                  
                   redirections(token,redir_check);
-                  token = strtok(NULL,";");
-                  
+                  token = strtok(NULL,";");     
             }
 
             else
@@ -74,13 +60,9 @@ void handle_input(char* str)
                   }
 
                   fork_process(token);
-
                   token = strtok(NULL,";"); 
-            }
-
-            
+            }       
       }
-
 }
 
 
@@ -96,7 +78,7 @@ void fork_process(char* cmd)
 
          if(pid < 0)
          {
-            perror("FORKING FAILURE");
+            perror("FORKING FAILURE(shell.c - fork_process()");
             exit(EXIT_FAILURE);
          }
 
@@ -123,7 +105,7 @@ char** set_arguments(char* cmd)
 
       exec_args = (char**) malloc (sizeof(char*) * MAX_ARGS);
 
-      i=0;
+      i = 0;
 
       token = strtok(cmd," ");
       
@@ -168,7 +150,7 @@ void execute_process(char* exec_args[MAX_ARGS])
       {
             if(execvp(exec_args[0],exec_args) == -1)
             {
-                  perror("EXECUTION FAILED");
+                  perror("EXECUTION FAILURE (shell.c - execute_process())");
                   exit(EXIT_FAILURE);
             }
       }
@@ -193,7 +175,6 @@ int hasPipes(char *str)
 
             i++;
       }
-
       return pipe_counter;
 }
 
@@ -201,24 +182,6 @@ int hasPipes(char *str)
 
 int hasRedirections(char* str)
 {
-      /*
-            int redir_flag,i;
-
-            redir_flag,i = 0;
-
-            while(i < strlen(str))
-            {
-                  if(str[i] == '<' || str[i] == '>' || str[i] == '>>')
-                  {
-                        redir_flag = 1;
-                        return redir_flag;
-                  }
-                  i++;
-            }
-
-            return 0;
-      */
-
       char* in;
       char* out;
       char* app;
@@ -235,7 +198,9 @@ int hasRedirections(char* str)
       {
             return 2;
       }
-      else if(app){
+      else if(app)
+      {
+            
             return 3;
       }
       else 
@@ -252,15 +217,9 @@ void pipeline(char *pipesString, int totalPipes)
       char**      cmd_arguments;
       int         pipesfd[totalPipes * 2];
       int         i,j;
-      // pid_t       pid[totalPipes];
       pid_t       pid;
 
       i,j = 0;
-   
-
-      // cmd_arguments = (char** )malloc(sizeof(char*) * MAX_ARGS);
-
-      // ls | grep .c ; ls | grep .c | date
 
       token = strtok(pipesString,"|");
 
@@ -280,7 +239,7 @@ void pipeline(char *pipesString, int totalPipes)
 
             if(pid < 0)
             {
-                  perror("FORK FAILURE");
+                  perror("FORK FAILURE (shell.c - pipeline())");
                   exit(EXIT_FAILURE);
             }
 
@@ -288,64 +247,7 @@ void pipeline(char *pipesString, int totalPipes)
             {
                   
                   cmd_arguments = set_arguments(token);
-                  /*
-                        // 1h diergasia
-                        if((i == 0))
-                        {
-                              dup2(pipesArr[i],STDOUT_FILENO);
-
-                              // close(pipesArr[i][0]);
-
-                              for(j=0; j<totalPipes; j++)
-                              {
-                                    close(pipesArr[j][0]);
-                                    
-                                    
-                              }
-      
-                              execute_process(cmd_arguments);
-                        }
-
-                        //  teleutaia diergasia
-                        else if(i == totalPipes)
-                        {
-                              dup2(pipesArr[i-1][0],STDIN_FILENO);
-
-                              for(j=0; j<totalPipes; j++)
-                              {
-                                    // if(j != totalPipes-1)
-                                    // {
-                                          close(pipesArr[j][0]);
-                                          close(pipesArr[j][1]);
-                                    // }
-                              }
-
-                              // close(pipesArr[j-1][1]);
-                              execute_process(cmd_arguments);
-                        } 
-
-                        // ypoloipes
-                        else
-                        {
-                              dup2(pipesArr[i-1][0],STDIN_FILENO);
-                              dup2(pipesArr[i][1],STDOUT_FILENO);
-
-                              for(j=0; j<totalPipes; j++)
-                              {
-                                    // // close all the pipes
-                                    close(pipesArr[j][0]);
-                                    close(pipesArr[j][1]);
-                              }
-
-                              // close(pipesArr[i-1][1]); // Close write end
-                              // close(pipesArr[i][0]);   // Close read end
-
-                              
-                              // close pipes
-
-                              execute_process(cmd_arguments);
-                        }
-                  */ 
+                  
                   if (i != 0)
 			{
 				dup2(pipesfd[(i - 1) * 2], 0);
@@ -355,6 +257,7 @@ void pipeline(char *pipesString, int totalPipes)
 			{
 				dup2(pipesfd[(i * 2) + 1], 1);
 			} 
+
                   for (j = 0; j < 2 * totalPipes; j++)
 			{
 				close(pipesfd[j]);
@@ -365,20 +268,16 @@ void pipeline(char *pipesString, int totalPipes)
             
             token = strtok( NULL,"|");
       }
-
-      
+    
       for(i=0; i<totalPipes*2; i++)
       {
-            // close all the pipes
             close(pipesfd[i]);
       }
 
       for(i=0; i<totalPipes+1; i++)
       {
             waitpid(pid,NULL,0);
-      }
-
-      
+      }     
 }
 
 
@@ -397,9 +296,10 @@ void redirections(char* str, int redir_flag)
       switch(redir_flag)
       {
             case 1:
+
                         token = strtok(str,"<");
-                        argmnts = set_arguments(token);
                         token2 = strtok(NULL,"<");
+                        argmnts = set_arguments(token);
                         break;
             case 2:
                         token = strtok(str,">");
@@ -408,8 +308,8 @@ void redirections(char* str, int redir_flag)
                         break;
             case 3:     
                         token = strtok(str,">>");
-                        argmnts = set_arguments(token);
                         token = strtok(NULL,">>");
+                        argmnts = set_arguments(token);
                         break;
             default:
                         break;
@@ -424,14 +324,14 @@ void redirections(char* str, int redir_flag)
 void execute_redirections(char** cmd1, char* cmd2, int redir)
 {
       pid_t pid,wpid;
-      int status;
-      int original_stdout;
+      int   status;
+      int   original_stdout;
 
       pid = fork();
 
       if(pid < 0)
       {
-            perror("FORK FAILURE");
+            perror("FORK FAILURE (shell.c - execute_redirections())");
             exit(EXIT_FAILURE);
       }
 
@@ -490,6 +390,9 @@ void execute_redirections(char** cmd1, char* cmd2, int redir)
 char* removeSpaces(char* input)
 {
     int i = 0, j = 0;
+    if(input == NULL){
+      printf("Null\n");
+    }
     while (input[i]) {
         if (input[i] != ' ') {
             input[j++] = input[i];
