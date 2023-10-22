@@ -129,7 +129,7 @@ char** set_arguments(char* cmd)
 
       i=0;
 
-      token = strtok(cmd, " ");
+      token = strtok(cmd," ");
       
       if(exec_args)
       {
@@ -358,13 +358,12 @@ void redirections(char* str, int redir_flag)
 {
       char*       token;
       char*       token2;
+      char*       token3;
       char**      argmnts;
 
       token = NULL;
       token2 = NULL;
       argmnts = NULL;
-
-      // printf("Redirection Received %s\n",str);
 
       switch(redir_flag)
       {
@@ -386,11 +385,10 @@ void redirections(char* str, int redir_flag)
             default:
                         break;
       }
+      
+      token3 = removeSpaces(token2);  
 
-      printf("First command\t%s\nSecond command\t%s\n",*argmnts,token2);      
-
-      execute_redirections(argmnts,token2,redir_flag);
-
+      execute_redirections(argmnts,token3,redir_flag);
 }
 
 
@@ -451,3 +449,22 @@ void execute_redirections(char** cmd1, char* cmd2, int redir)
             wait(NULL);
       }
 }
+
+
+
+char* removeSpaces(char* input)
+{
+    
+    int i = 0, j = 0;
+    while (input[i]) {
+        if (input[i] != ' ') {
+            input[j++] = input[i];
+        }
+        i++;
+    }
+    input[j] = '\0';
+
+    return input;
+}
+
+

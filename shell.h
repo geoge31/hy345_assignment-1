@@ -41,6 +41,7 @@ void redirections(char* str, int redir_flag);
 
 void execute_redirections(char** cmd1, char* cmd2, int redir);
 
+char* removeSpaces(char* input);
 
 
 // void pipes_implementation(char *str, int npipes, char* exec_args[MAX_ARGS]);
