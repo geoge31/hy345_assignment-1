@@ -1,12 +1,9 @@
 # assignment1
 
--- Shell implementation-- 
-
-Γιώργος Γεραμούτσος
-@csd3927
+-- Shell implementation--
 
 
-Εντολές όπως :
+Check these commands:
     ls 
     ls -l
     date 
@@ -16,10 +13,7 @@
     ls | grep .c
     cat < Makefile
     
-λειτουργουν σωστά.
 
-Δεν λειτουργουν σωστα τα Πολλαπλα pipes cmd | cmd | cmd
-Δεν λειτουργουν σωστα και εντολες οπως ls -l; ls | grep .c ; date > test ; cat < test
 
 
 
